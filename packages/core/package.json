@@ -1,0 +1,19 @@
+{
+  "name": "@synapse/core",
+  "version": "0.1.0",
+  "description": "Core DAG engine, topological sort, and canonical models for Synapse",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.8"
+  }
+}

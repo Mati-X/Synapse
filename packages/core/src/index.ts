@@ -1,0 +1,2 @@
+// @synapse/core entrypoint
+export {};
