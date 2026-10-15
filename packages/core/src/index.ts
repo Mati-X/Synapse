@@ -1,2 +1,2 @@
 // @synapse/core entrypoint
-export {};
+export * from './engine/kahn.js';
