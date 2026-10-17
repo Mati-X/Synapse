@@ -1,9 +1,4 @@
-export enum NodeCategory {
-    'TRIGGER',
-    'LOGIC',
-    'ACTION',
-    'INTEGRATION'
-}
+export type NodeCategory = 'TRIGGER' | 'LOGIC' | 'ACTION' | 'INTEGRATION';
 
 export interface ExecutionContext {
     runId : string;
