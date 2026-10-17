@@ -23,5 +23,4 @@ export function interpolate(template: string, variables: Record<string, any>): s
     return String(value);
   });
 
-  return '';
 }
