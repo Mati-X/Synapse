@@ -8,12 +8,12 @@ export function buildApp(): FastifyInstance {
     logger: process.env.NODE_ENV === 'test' ? false : true,
   });
 
-  // Rejestracja CORS
+  // CORS
   app.register(cors, {
     origin: '*',
   });
 
-  // Rejestracja tras
+  // REGISTRIES
   app.register(healthRoutes);
   app.register(workflowRoutes, { prefix: '/api/workflows' });
 
