@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import {kahnSort} from "@synapse/core";
 import { db } from '../db/index.js';
 import { workflows, workflowVersions } from '../db/schema.js';
+import { eq, desc } from 'drizzle-orm';
 
 /**
  * Workflow management routes:
@@ -60,6 +61,33 @@ export const workflowRoutes: FastifyPluginAsync = async (app: FastifyInstance) =
   })
 
   app.get('/', async () => {
-    return { workflows: [] };
+    const list = await db.select().from(workflows);
+    return { workflows: list };
+  });
+
+  app.get ('/:id', async (request, reply) => {
+    const { id } = request.params as { id: string };
+
+    const [workflow] = await db
+        .select()
+        .from(workflows)
+        .where(eq(workflows.id, id));
+
+    if (!workflow) {
+      return reply.status(404).send({ error: `Workflow ${id} not found` });
+    }
+
+    const [latestVersion] = await db
+        .select()
+        .from(workflowVersions)
+        .where(eq(workflowVersions.workflow_id, id))
+        .orderBy(desc(workflowVersions.version_number))
+        .limit(1);
+
+    return {
+      ...workflow,
+      version: latestVersion?.version_number ?? 1,
+      definition: latestVersion?.definition ?? { nodes: [], edges: [] },
+    };
   });
 };
