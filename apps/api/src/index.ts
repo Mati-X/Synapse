@@ -7,11 +7,9 @@ const host = process.env.HOST || '0.0.0.0';
 
 async function start() {
   try {
-    // 1. Uruchomienie workera kolejki BullMQ w tle
     const worker = createWorkflowWorker();
     console.log('⚡ BullMQ Workflow Worker initialized');
 
-    // 2. Uruchomienie serwera HTTP Fastify
     await app.listen({ port, host });
     console.log(`🚀 Synapse API server listening on http://${host}:${port}`);
 

@@ -45,7 +45,7 @@ export class WorkflowRunner {
             }
 
             if (skippedNodes.has(nodeId)) {
-                NODE_SKIPPED:onEvent?.({ type: 'NODE_SKIPPED', runId: context.runId, nodeId, timestamp: new Date().toISOString() });
+                onEvent?.({ type: 'NODE_SKIPPED', runId: context.runId, nodeId, timestamp: new Date().toISOString() });
                 continue;
             }
 
@@ -53,17 +53,17 @@ export class WorkflowRunner {
             if (!executor) {
                 throw new Error(`Unknown node executor for type: ${node.type}`);
             }
-            NODE_STARTED:onEvent?.({ type: 'NODE_STARTED', runId: context.runId, nodeId, timestamp: new Date().toISOString() });
+            onEvent?.({ type: 'NODE_STARTED', runId: context.runId, nodeId, timestamp: new Date().toISOString() });
             try {
                 const result = await executor.execute(node.data.config, context);
 
                 context.variables[node.id] = result.output;
                 nodeOutputs.set(nodeId, result);
 
-                NODE_COMPLETED:onEvent?.({ type: 'NODE_COMPLETED', runId: context.runId, nodeId, output: result.output, nextHandle: result.nextHandle, timestamp: new Date().toISOString() });
+                onEvent?.({ type: 'NODE_COMPLETED', runId: context.runId, nodeId, output: result.output, nextHandle: result.nextHandle, timestamp: new Date().toISOString() });
             }
              catch (error : any) {
-                NODE_FAILED:onEvent?.({ type: 'NODE_FAILED', runId: context.runId, nodeId, error: error.message, timestamp: new Date().toISOString() });
+                onEvent?.({ type: 'NODE_FAILED', runId: context.runId, nodeId, error: error.message, timestamp: new Date().toISOString() });
                 throw error;
             }
 

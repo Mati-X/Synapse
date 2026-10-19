@@ -15,7 +15,6 @@ describe('Server-Sent Events (SSE) Telemetry Broker', () => {
       run2Events.push(event);
     });
 
-    // Emitujemy zdarzenie dla run_1
     telemetryBroker.emit({
       type: 'NODE_STARTED',
       runId: 'run_1',
@@ -23,7 +22,6 @@ describe('Server-Sent Events (SSE) Telemetry Broker', () => {
       timestamp: new Date().toISOString(),
     });
 
-    // Emitujemy zdarzenie dla run_2
     telemetryBroker.emit({
       type: 'NODE_COMPLETED',
       runId: 'run_2',
@@ -41,7 +39,6 @@ describe('Server-Sent Events (SSE) Telemetry Broker', () => {
     expect(run2Events[0].nodeId).toBe('condition_step');
     expect(run2Events[0].type).toBe('NODE_COMPLETED');
 
-    // Test unsubskrypcji
     unsub1();
     telemetryBroker.emit({
       type: 'NODE_COMPLETED',
@@ -51,7 +48,6 @@ describe('Server-Sent Events (SSE) Telemetry Broker', () => {
       timestamp: new Date().toISOString(),
     });
 
-    // Po odsubskrybowaniu liczba zdarzeń nie powinna wzrosnąć
     expect(run1Events).toHaveLength(1);
 
     unsub2();
