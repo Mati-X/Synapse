@@ -1,8 +1,6 @@
 import { pgTable, varchar, boolean, timestamp, uuid, integer, jsonb, unique } from 'drizzle-orm/pg-core';
 import {sql} from "drizzle-orm";
 
-// TODO: Twoja implementacja tabel
-
 // --- workflows ---
 // Kolumny:
 //   id:         varchar(64) PRIMARY KEY

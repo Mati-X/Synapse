@@ -30,7 +30,6 @@ describe('Fastify Server Integration Tests', () => {
 
   describe('POST /api/workflows validation', () => {
     it('returns 400 Bad Request if workflow contains a cycle', async () => {
-      // Cykl: A -> B -> A
       const cyclicWorkflow = {
         name: 'Cyclic Workflow',
         nodes: [{ id: 'A' }, { id: 'B' }],

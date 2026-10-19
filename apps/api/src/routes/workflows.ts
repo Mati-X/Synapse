@@ -2,28 +2,9 @@ import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import {ConditionExecutor, HttpRequestExecutor, kahnSort, WorkflowDefinition, WorkflowRunner} from "@synapse/core";
 import { db } from '../db/index.js';
 import {executionRuns, workflows, workflowVersions} from '../db/schema.js';
+import { workflowQueue } from '../queue/workflowQueue.js';
 import { eq, desc } from 'drizzle-orm';
 
-/**
- * Workflow management routes:
- *
- * 1. POST /api/workflows
- *    - Tworzy workflow i pierwszą wersję w bazie
- *    - Waliduje acykliczność za pomocą kahnSort(nodes, edges) z @synapse/core
- *    - Jeśli wykryto cykl -> 400 Bad Request
- *    - Zwraca 201 z id utworzonego workflow
- *
- * 2. GET /api/workflows
- *    - Zwraca listę wszystkich aktywnych workflow z tabeli workflows
- *
- * 3. GET /api/workflows/:id
- *    - Zwraca pojedynczy workflow wraz z najnowszą definicją grafu
- *
- * 4. POST /api/workflows/:id/run
- *    - Uruchamia workflow przez WorkflowRunner z @synapse/core
- *    - Zapisuje przebieg do execution_runs ze statusem COMPLETED / FAILED
- *    - Zwraca wynik wykonania (context.variables)
- */
 export const workflowRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
   app.post('/', async (request, reply) => {
     const body : any = request.body;
@@ -165,6 +146,58 @@ export const workflowRoutes: FastifyPluginAsync = async (app: FastifyInstance) =
 
       return reply.status(500).send({ error: err.message });
     }
-  })
+  });
 
+
+  app.post('/:id/dispatch', async (request,reply) => {
+    const { id } = request.params as { id: string };
+    const result = await getWorkflowWithLatestVersion(id);
+    if (!result || !result.latestVersion) {
+      return reply.status(404).send({ error: `Workflow ${id} not found` });
+    }
+    const { workflow, latestVersion } = result;
+
+    const runId = crypto.randomUUID() as string;
+
+    const context = {
+      runId: runId,
+      workflowId: id,
+      variables: {
+        trigger: request.body || {}
+      },
+      logger: {
+        info: (m: any) => app.log.info(m),
+        error: (m: any) => app.log.error(m)
+      }
+    }
+
+    await db.transaction(async (tx) => {
+       await db.insert(executionRuns).values({
+          id: runId,
+          workflow_id: id,
+          version_id: latestVersion.id,
+          status: 'PENDING',
+          context_state: context.variables,
+          started_at: new Date(),
+        });
+    });
+
+    await workflowQueue.add('execute_workflow', {
+      runId,
+      workflowId: id,
+      versionId: latestVersion.id,
+      definition: {
+        id: workflow.id,
+        name: workflow.name,
+        nodes: (latestVersion.definition as any).nodes || [],
+        edges: (latestVersion.definition as any).edges || [],
+      },
+      initialVariables: context.variables,
+    });
+
+    return reply.status(202).send({
+      runId,
+      status: 'PENDING',
+    });
+  });
 };
