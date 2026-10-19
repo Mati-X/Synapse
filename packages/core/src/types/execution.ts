@@ -20,3 +20,11 @@ export interface NodeExecutor<TConfig> {
     category: Readonly<NodeCategory>;
     execute: (config: TConfig, context: ExecutionContext) => Promise<NodeExecutorResult>
 }
+
+export type WorkflowTelemetryEvent =
+    | { type: 'NODE_STARTED'; runId: string; nodeId: string; timestamp: string }
+    | { type: 'NODE_COMPLETED'; runId: string; nodeId: string; output: any; nextHandle?: string; timestamp: string }
+    | { type: 'NODE_SKIPPED'; runId: string; nodeId: string; timestamp: string }
+    | { type: 'NODE_FAILED'; runId: string; nodeId: string; error: string; timestamp: string };
+
+export type TelemetryListener = (event: WorkflowTelemetryEvent) => void;

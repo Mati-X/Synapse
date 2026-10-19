@@ -191,4 +191,63 @@ describe('WorkflowRunner (Execution Engine)', () => {
       'Unknown node executor for type: UNREGISTERED_PLUGIN'
     );
   });
+
+  it('emits telemetry events (NODE_STARTED, NODE_COMPLETED, NODE_SKIPPED) via onEvent callback', async () => {
+    const events: any[] = [];
+    const workflow: WorkflowDefinition = {
+      id: 'wf_telemetry',
+      name: 'Telemetry Workflow',
+      nodes: [
+        {
+          id: 'step_cond',
+          type: 'CORE_CONDITION',
+          data: {
+            config: { field: 'value', operator: 'equals', targetValue: 10 },
+          },
+        },
+        {
+          id: 'step_skipped',
+          type: 'CORE_CONDITION',
+          data: {
+            config: { field: 'value', operator: 'equals', targetValue: 99 },
+          },
+        },
+      ],
+      edges: [
+        {
+          id: 'e1',
+          source: 'step_cond',
+          sourceHandle: 'false',
+          target: 'step_skipped',
+        },
+      ],
+    };
+
+    const runner = new WorkflowRunner(setupRegistry());
+    const context = createMockContext({ value: 10 }); // Condition evaluates to true, so false handle is skipped!
+
+    await runner.run(workflow, context, (event) => {
+      events.push(event);
+    });
+
+    const eventTypes = events.map((e) => e.type);
+    expect(eventTypes).toContain('NODE_STARTED');
+    expect(eventTypes).toContain('NODE_COMPLETED');
+    expect(eventTypes).toContain('NODE_SKIPPED');
+
+    const startedEvent = events.find((e) => e.type === 'NODE_STARTED');
+    expect(startedEvent).toMatchObject({
+      type: 'NODE_STARTED',
+      runId: 'run-test-001',
+      nodeId: 'step_cond',
+    });
+
+    const skippedEvent = events.find((e) => e.type === 'NODE_SKIPPED');
+    expect(skippedEvent).toMatchObject({
+      type: 'NODE_SKIPPED',
+      runId: 'run-test-001',
+      nodeId: 'step_skipped',
+    });
+  });
 });
+

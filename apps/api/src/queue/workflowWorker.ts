@@ -10,6 +10,7 @@ import {
 import { db } from '../db/index.js';
 import { executionRuns } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
+import { telemetryBroker } from '../telemetry/telemetryBroker.js';
 
 export function createWorkflowWorker() {
   const worker = new Worker<WorkflowJobData>(
@@ -41,7 +42,7 @@ export function createWorkflowWorker() {
       };
 
       try {
-        const finalContext = await runner.run(definition, context);
+        const finalContext = await runner.run(definition, context, (event) => telemetryBroker.emit(event));
 
         await db
           .update(executionRuns)

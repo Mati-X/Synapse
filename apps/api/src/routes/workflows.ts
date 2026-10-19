@@ -4,6 +4,7 @@ import { db } from '../db/index.js';
 import {executionRuns, workflows, workflowVersions} from '../db/schema.js';
 import { workflowQueue } from '../queue/workflowQueue.js';
 import { eq, desc } from 'drizzle-orm';
+import { telemetryBroker } from '../telemetry/telemetryBroker.js';
 
 export const workflowRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
   app.post('/', async (request, reply) => {
@@ -111,7 +112,7 @@ export const workflowRoutes: FastifyPluginAsync = async (app: FastifyInstance) =
     }
 
     try {
-      const finalContext = await runner.run(definition, context);
+      const finalContext = await runner.run(definition, context, (event) => telemetryBroker.emit(event));
 
       await db.transaction(async (tx) => {
         await db.insert(executionRuns).values({
