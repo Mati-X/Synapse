@@ -42,3 +42,6 @@ coverage/
 # Local agent rules
 AGENTS.md
 GEMINI.md
+
+# Local dev showcase
+apps/web/src/pages/
