@@ -19,10 +19,12 @@ interface WorkflowStoreState {
   selectedNodeId: string | null;
   validationError: string | null;
   isExecuting: boolean;
+  connectingHandle: { nodeId: string; handleId?: string | null; handleType?: string } | null;
 
   onNodesChange: OnNodesChange<SynapseNode>;
   onEdgesChange: OnEdgesChange;
   onConnect: OnConnect;
+  setConnectingHandle: (handle: { nodeId: string; handleId?: string | null; handleType?: string } | null) => void;
 
   addNode: (nodeType: 'TRIGGER' | 'CORE_CONDITION' | 'HTTP_REQUEST', position?: { x: number; y: number }) => void;
   selectNode: (nodeId: string | null) => void;
@@ -105,22 +107,28 @@ const initialEdges: SynapseEdge[] = [
   {
     id: 'e_trigger_cond',
     source: 'trigger_1',
+    sourceHandle: 'output',
     target: 'condition_1',
-    animated: true,
+    targetHandle: 'input_a',
+    type: 'cable',
   },
   {
     id: 'e_cond_true',
     source: 'condition_1',
     sourceHandle: 'true',
     target: 'http_1',
+    targetHandle: 'input',
     label: 'true',
+    type: 'cable',
   },
   {
     id: 'e_cond_false',
     source: 'condition_1',
     sourceHandle: 'false',
     target: 'http_2',
+    targetHandle: 'input',
     label: 'false',
+    type: 'cable',
   },
 ];
 
@@ -135,6 +143,11 @@ export const useWorkflowStore = create<WorkflowStoreState>((set, get) => ({
   selectedNodeId: null,
   validationError: null,
   isExecuting: false,
+  connectingHandle: null,
+
+  setConnectingHandle: (connectingHandle) => {
+    set({ connectingHandle });
+  },
 
   onNodesChange: (changes) => {
     set({
@@ -173,7 +186,7 @@ export const useWorkflowStore = create<WorkflowStoreState>((set, get) => ({
       edges: addEdge(
         {
           ...connection,
-          animated: true,
+          type: 'cable',
           label: connection.sourceHandle ?? undefined,
         },
         get().edges

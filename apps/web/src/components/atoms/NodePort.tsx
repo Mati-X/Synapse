@@ -16,25 +16,25 @@ export interface NodePortProps {
 
 const variantStyles: Record<PortVariant, { plug: string; pin: string; text: string; glow: string; socketBorder: string }> = {
   default: {
-    plug: 'bg-gradient-to-r from-zinc-700 to-zinc-800 border-zinc-600',
-    pin: 'bg-zinc-300 border-zinc-400',
-    text: 'text-zinc-200',
-    glow: 'shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]',
-    socketBorder: 'border-zinc-800 text-zinc-600',
+    plug: 'bg-gradient-to-r from-zinc-800 to-zinc-900 border-zinc-600/80',
+    pin: 'bg-sky-400 border-sky-300 shadow-[0_0_6px_rgba(56,189,248,0.7)]',
+    text: 'text-zinc-100',
+    glow: 'shadow-[0_0_8px_rgba(56,189,248,0.25),inset_0_1px_0_rgba(255,255,255,0.15)]',
+    socketBorder: 'border-zinc-800 text-zinc-500',
   },
   true: {
-    plug: 'bg-gradient-to-r from-emerald-700 to-emerald-900 border-emerald-500',
-    pin: 'bg-emerald-300 border-emerald-400',
-    text: 'text-emerald-200',
-    glow: 'shadow-[0_0_12px_rgba(16,185,129,0.35),inset_0_1px_0_rgba(255,255,255,0.2)]',
-    socketBorder: 'border-emerald-900/60 text-emerald-600/70',
+    plug: 'bg-gradient-to-r from-emerald-900 to-emerald-950 border-emerald-500/80',
+    pin: 'bg-emerald-400 border-emerald-300 shadow-[0_0_6px_rgba(16,185,129,0.7)]',
+    text: 'text-emerald-100',
+    glow: 'shadow-[0_0_10px_rgba(16,185,129,0.35),inset_0_1px_0_rgba(255,255,255,0.2)]',
+    socketBorder: 'border-emerald-950 text-emerald-600/70',
   },
   false: {
-    plug: 'bg-gradient-to-r from-rose-700 to-rose-900 border-rose-500',
-    pin: 'bg-rose-300 border-rose-400',
-    text: 'text-rose-200',
-    glow: 'shadow-[0_0_12px_rgba(244,63,94,0.35),inset_0_1px_0_rgba(255,255,255,0.2)]',
-    socketBorder: 'border-rose-900/60 text-rose-600/70',
+    plug: 'bg-gradient-to-r from-rose-900 to-rose-950 border-rose-500/80',
+    pin: 'bg-rose-400 border-rose-300 shadow-[0_0_6px_rgba(244,63,94,0.7)]',
+    text: 'text-rose-100',
+    glow: 'shadow-[0_0_10px_rgba(244,63,94,0.35),inset_0_1px_0_rgba(255,255,255,0.2)]',
+    socketBorder: 'border-rose-950 text-rose-600/70',
   },
 };
 
@@ -100,17 +100,17 @@ export const NodePort: React.FC<NodePortProps> = ({
     >
       <div
         className={`
-          nodrag relative flex items-center h-6 min-w-[56px] overflow-visible
+          nodrag relative flex items-center h-[26px] w-[60px] overflow-hidden
           bg-zinc-950/95 border-y
-          shadow-[inset_2px_1.5px_4px_rgba(0,0,0,0.85)]
-          transition-all duration-200
+          shadow-[inset_0_2px_4px_rgba(0,0,0,0.95)]
+          transition-colors duration-150
           ${isOutput 
-            ? `rounded-l-md rounded-r-none border-l border-r-0 pl-2 pr-1 justify-end ${styles.socketBorder}` 
-            : `rounded-r-md rounded-l-none border-r border-l-0 pr-2 pl-1 justify-start ${styles.socketBorder}`
+            ? `rounded-l-lg rounded-r-none border-l border-r-0 pl-2 pr-0.5 justify-end ${styles.socketBorder}` 
+            : `rounded-r-lg rounded-l-none border-r border-l-0 pr-2 pl-0.5 justify-start ${styles.socketBorder}`
           }
         `}
       >
-        <div className="flex items-center gap-1 opacity-50 px-1 pointer-events-none">
+        <div className="flex items-center gap-1 opacity-40 px-1 pointer-events-none">
           <span className="text-[8px] font-mono font-bold tracking-wider uppercase">
             {displayLabel}
           </span>
@@ -124,33 +124,34 @@ export const NodePort: React.FC<NodePortProps> = ({
         {((isOutput && !isConnected && !isBeingDragged) || (!isOutput && isConnected)) && (
           <div
             className={`
-              absolute inset-y-0.5 ${isOutput ? 'right-0.5' : 'left-0.5'}
-              flex items-center gap-1.5 px-2 rounded-sm border
-              transition-transform duration-150 ease-out pointer-events-none
+              absolute top-[2px] ${isOutput ? 'right-[2px]' : 'left-[2px]'}
+              w-[52px] h-[20px] flex items-center justify-between px-2 rounded-[5px] border
+              pointer-events-none transition-all duration-150
               ${styles.plug} ${styles.glow}
             `}
           >
-            <span className={`text-[8px] font-mono font-bold tracking-wider uppercase ${styles.text}`}>
+            <span className={`text-[8px] font-mono font-bold tracking-wider uppercase truncate ${styles.text}`}>
               {displayLabel}
             </span>
-            <div className={`w-1 h-2 rounded-xs border ${styles.pin}`} />
+            <div className={`w-1.5 h-3 rounded-xs border shrink-0 ${styles.pin}`} />
           </div>
         )}
 
         {isOutput && isConnected && !isBeingDragged && (
           <div
             className={`
-              absolute inset-y-0.5 right-0.5 flex items-center gap-1.5 px-2 rounded-sm border
-              transition-all duration-200 ease-out pointer-events-none
+              absolute top-[2px] right-[2px]
+              w-[52px] h-[20px] flex items-center justify-between px-2 rounded-[5px] border
+              pointer-events-none transition-all duration-200
               opacity-0 translate-x-1 scale-95
               group-hover:opacity-100 group-hover:translate-x-0 group-hover:scale-100
               ${styles.plug} ${styles.glow}
             `}
           >
-            <span className={`text-[8px] font-mono font-bold tracking-wider uppercase ${styles.text}`}>
+            <span className={`text-[8px] font-mono font-bold tracking-wider uppercase truncate ${styles.text}`}>
               +{displayLabel}
             </span>
-            <div className={`w-1 h-2 rounded-xs border ${styles.pin}`} />
+            <div className={`w-1.5 h-3 rounded-xs border shrink-0 ${styles.pin}`} />
           </div>
         )}
 
