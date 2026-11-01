@@ -28,7 +28,7 @@ export const CableEdge: React.FC<EdgeProps> = ({
 
   return (
     <g className="cable-edge group">
-      {/* 1. Outer Glow Sheath */}
+
       <path
         d={edgePath}
         fill="none"
@@ -37,7 +37,6 @@ export const CableEdge: React.FC<EdgeProps> = ({
         strokeOpacity={selected ? 0.45 : 0.25}
       />
 
-      {/* 2. Core Physical Cable */}
       <path
         id={id}
         d={edgePath}
@@ -47,7 +46,6 @@ export const CableEdge: React.FC<EdgeProps> = ({
         strokeLinecap="round"
       />
 
-      {/* 3. Subtle Data Pulse Stream */}
       <path
         d={edgePath}
         fill="none"

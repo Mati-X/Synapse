@@ -10,7 +10,6 @@ export const CableConnectionLine: React.FC<ConnectionLineComponentProps> = ({
   toPosition,
   fromHandle,
 }) => {
-  // Cable enters the back of the plug (toX - 52), while the plug pin sits at toX
   const targetCableX = toX - 50;
 
   const [edgePath] = getBezierPath({
@@ -39,7 +38,7 @@ export const CableConnectionLine: React.FC<ConnectionLineComponentProps> = ({
 
   return (
     <g className="cable-connection-line">
-      {/* 1. Neon Cable Outer Glow */}
+
       <path
         fill="none"
         stroke={cableColor}
@@ -47,7 +46,7 @@ export const CableConnectionLine: React.FC<ConnectionLineComponentProps> = ({
         strokeOpacity={0.25}
         d={edgePath}
       />
-      {/* 2. Cable Core Wire */}
+
       <path
         fill="none"
         stroke={cableColor}
@@ -56,7 +55,6 @@ export const CableConnectionLine: React.FC<ConnectionLineComponentProps> = ({
         d={edgePath}
       />
 
-      {/* 3. Vacuum-cleaner Plug Following Cursor (Pin at toX) */}
       <foreignObject
         x={toX - 52}
         y={toY - 11}

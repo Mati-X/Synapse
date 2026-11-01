@@ -55,7 +55,7 @@ export const Inspector: React.FC = () => {
 
   return (
     <aside className="w-88 border-l border-zinc-800/80 bg-zinc-950/90 flex flex-col backdrop-blur-xl select-none z-30">
-      {/* Header */}
+
       <div className="p-4 border-b border-zinc-800/80">
         <div className="flex justify-between items-center mb-2">
           <div className="flex items-center gap-2 min-w-0">
@@ -75,7 +75,6 @@ export const Inspector: React.FC = () => {
           </button>
         </div>
 
-        {/* Tab Switcher */}
         <div className="flex items-center p-0.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs font-mono font-medium mt-3">
           <button
             onClick={() => setActiveTab('config')}
@@ -113,11 +112,10 @@ export const Inspector: React.FC = () => {
         </div>
       </div>
 
-      {/* Body */}
       <div className="flex-1 p-4 overflow-y-auto space-y-3 font-sans">
         {activeTab === 'config' ? (
           <>
-            {/* TRIGGER Config */}
+
             {data.type === 'TRIGGER' && (
               <div className="space-y-3">
                 <FormField label="Webhook Trigger Mode">
@@ -139,7 +137,6 @@ export const Inspector: React.FC = () => {
               </div>
             )}
 
-            {/* CONDITION Config */}
             {data.type === 'CORE_CONDITION' && (
               <div className="space-y-3">
                 <FormField label="Field Path" helperText="Target JSON path (e.g. trigger.amount)">
@@ -172,7 +169,6 @@ export const Inspector: React.FC = () => {
               </div>
             )}
 
-            {/* HTTP_REQUEST Config */}
             {data.type === 'HTTP_REQUEST' && (
               <div className="space-y-3">
                 <FormField label="HTTP Method">
@@ -204,7 +200,7 @@ export const Inspector: React.FC = () => {
             )}
           </>
         ) : (
-          /* Telemetry & Runtime Output Tab */
+
           <div className="space-y-3 font-mono">
             <div className="p-3 rounded-xl bg-zinc-900/80 border border-zinc-800 space-y-2">
               <div className="flex items-center justify-between text-xs">
@@ -259,7 +255,6 @@ export const Inspector: React.FC = () => {
         )}
       </div>
 
-      {/* Footer Quick Actions */}
       <div className="p-3 border-t border-zinc-800/80 bg-zinc-950/60 flex items-center justify-between gap-2">
         <button
           onClick={() => duplicateNode(selectedNode.id)}

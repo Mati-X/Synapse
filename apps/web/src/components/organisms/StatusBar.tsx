@@ -10,9 +10,9 @@ export const StatusBar: React.FC = () => {
 
   return (
     <footer className="h-7 border-t border-zinc-800/80 bg-zinc-950/95 text-zinc-400 text-[11px] font-mono select-none flex items-center justify-between px-4 z-40 backdrop-blur-md">
-      {/* Left: Execution Status & Stats */}
+
       <div className="flex items-center gap-4">
-        {/* Engine State Indicator */}
+
         <div className="flex items-center gap-1.5">
           <span
             className={`size-2 rounded-full ${
@@ -32,7 +32,6 @@ export const StatusBar: React.FC = () => {
 
         <div className="w-px h-3.5 bg-zinc-800" />
 
-        {/* Modules & Cables counts */}
         <div className="flex items-center gap-3 text-zinc-400">
           <span className="flex items-center gap-1 hover:text-zinc-200 transition-colors">
             <Layers className="size-3 text-zinc-500" />
@@ -44,7 +43,6 @@ export const StatusBar: React.FC = () => {
           </span>
         </div>
 
-        {/* Run results if completed */}
         {(completedCount > 0 || failedCount > 0) && (
           <>
             <div className="w-px h-3.5 bg-zinc-800" />
@@ -66,7 +64,6 @@ export const StatusBar: React.FC = () => {
         )}
       </div>
 
-      {/* Right: Quick Hotkey hints */}
       <div className="flex items-center gap-3 text-zinc-500 text-[10px]">
         {selectedNodeId && (
           <span className="text-zinc-400 bg-zinc-900 border border-zinc-800 px-1.5 py-0.5 rounded">

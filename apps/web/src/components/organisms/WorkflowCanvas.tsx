@@ -104,7 +104,7 @@ const WorkflowCanvasInner: React.FC = () => {
 
   return (
     <div className="w-full h-full relative overflow-hidden bg-[#070709]">
-      {/* Dynamic multi-spectral ambient orbs layer */}
+
       <AmbientBackground />
 
       <CycleAlert message={validationError} onDismiss={clearValidationError} />

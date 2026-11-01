@@ -103,13 +103,11 @@ export const ConditionNode: React.FC<NodeProps<SynapseNode>> = ({ id, data, sele
           status={data.status}
         />
 
-        {/* Symmetrical Dual-Story Comparator Deck */}
         <div className="flex flex-col gap-1 pt-0.5 relative">
-          {/* Story A: IN A ── [ Operand A ] ── TRUE */}
+
           <div className="flex items-center justify-between">
             <NodePort type="target" position={Position.Left} id="input_a" label="IN A" />
-            
-            {/* Clickable Operand Well A */}
+
             <div
               onClick={() => setActivePicker(activePicker === 'A' ? null : 'A')}
               title="Click to select upstream variable"
@@ -125,7 +123,6 @@ export const ConditionNode: React.FC<NodeProps<SynapseNode>> = ({ id, data, sele
             <NodePort type="source" position={Position.Right} id="true" label="TRUE" />
           </div>
 
-          {/* Center Operator Keycap & Bridge */}
           <div className="relative flex items-center justify-center py-0.5 z-10">
             <div className="absolute inset-x-8 h-px bg-zinc-800/80 -z-1" />
             <button
@@ -143,11 +140,9 @@ export const ConditionNode: React.FC<NodeProps<SynapseNode>> = ({ id, data, sele
             </button>
           </div>
 
-          {/* Story B: IN B ── [ Operand B ] ── FALSE */}
           <div className="flex items-center justify-between">
             <NodePort type="target" position={Position.Left} id="input_b" label="IN B" />
-            
-            {/* Clickable Operand Well B */}
+
             <div
               onClick={() => setActivePicker(activePicker === 'B' ? null : 'B')}
               title="Click to select variable or target value"
@@ -165,7 +160,6 @@ export const ConditionNode: React.FC<NodeProps<SynapseNode>> = ({ id, data, sele
         </div>
       </NodeCard>
 
-      {/* Floating Variable Picker Popover */}
       {activePicker && (
         <VariablePicker
           currentNodeId={id}

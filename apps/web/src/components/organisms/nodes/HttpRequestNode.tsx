@@ -44,7 +44,6 @@ export const HttpRequestNode: React.FC<NodeProps<SynapseNode>> = ({ id, data, se
         status={data.status}
       />
 
-      {/* Recessed Request Well */}
       <div className="bg-zinc-950/80 border border-zinc-800/80 rounded-lg px-2.5 py-1.5 shadow-[inset_0_1.5px_2px_rgba(0,0,0,0.6)] flex items-center gap-2 mb-2.5">
         <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border uppercase shrink-0 ${methodStyle.bg} ${methodStyle.text} ${methodStyle.border}`}>
           {method}
@@ -54,7 +53,6 @@ export const HttpRequestNode: React.FC<NodeProps<SynapseNode>> = ({ id, data, se
         </span>
       </div>
 
-      {/* Sockets row: Symmetrical IN (left) and OUT (right) */}
       <div className="flex items-center justify-between pt-0.5">
         <NodePort type="target" position={Position.Left} id="input" />
         <NodePort type="source" position={Position.Right} id="output" />

@@ -29,7 +29,6 @@ export const VariablePicker: React.FC<VariablePickerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const { nodes, edges } = useWorkflowStore();
 
-  // Close on click outside or Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -48,7 +47,6 @@ export const VariablePicker: React.FC<VariablePickerProps> = ({
     };
   }, [onClose]);
 
-  // Find upstream connected node
   const incomingEdge = edges.find(
     (e) =>
       e.target === currentNodeId &&
@@ -59,7 +57,6 @@ export const VariablePicker: React.FC<VariablePickerProps> = ({
     ? nodes.find((n) => n.id === incomingEdge.source)
     : undefined;
 
-  // Compile available variables from connected node or all upstream nodes
   const availableVariables: VariableItem[] = [];
 
   const inspectNodePayload = (node: (typeof nodes)[0]) => {
@@ -67,7 +64,6 @@ export const VariablePicker: React.FC<VariablePickerProps> = ({
     const output = node.data.output;
 
     if (output && typeof output === 'object') {
-      // Dynamic output from execution
       Object.entries(output).forEach(([key, val]) => {
         const valType: VariableItem['type'] =
           typeof val === 'number'
@@ -88,7 +84,6 @@ export const VariablePicker: React.FC<VariablePickerProps> = ({
         });
       });
     } else if (node.data.type === 'TRIGGER') {
-      // Default schema for trigger
       availableVariables.push(
         {
           nodeId: node.id,
@@ -148,7 +143,6 @@ export const VariablePicker: React.FC<VariablePickerProps> = ({
   if (connectedSourceNode) {
     inspectNodePayload(connectedSourceNode);
   } else {
-    // If not directly connected, show variables from any upstream node
     nodes
       .filter((n) => n.id !== currentNodeId)
       .forEach((n) => inspectNodePayload(n));
@@ -172,7 +166,7 @@ export const VariablePicker: React.FC<VariablePickerProps> = ({
       ref={containerRef}
       className="nodrag nopan absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 w-64 bg-zinc-900/98 border border-zinc-700/80 rounded-xl shadow-[0_16px_36px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-xl p-2 select-none"
     >
-      {/* Header */}
+
       <div className="flex items-center justify-between px-1.5 pb-2 border-b border-zinc-800">
         <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400">
           Select Variable
@@ -187,7 +181,6 @@ export const VariablePicker: React.FC<VariablePickerProps> = ({
         )}
       </div>
 
-      {/* Variables List */}
       <div className="flex flex-col gap-1 mt-1.5 max-h-52 overflow-y-auto">
         {availableVariables.length === 0 ? (
           <div className="py-4 text-center text-[11px] font-mono text-zinc-500">

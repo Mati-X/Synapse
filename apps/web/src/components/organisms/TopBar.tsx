@@ -17,7 +17,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   return (
     <header className="bg-zinc-900/95 border-b border-zinc-800/90 text-zinc-200 select-none backdrop-blur-md z-40">
       <div className="flex justify-between items-center h-13 px-5">
-        {/* Brand & Workflow Meta */}
+
         <div className="flex items-center gap-3">
           {onNavigateHome && (
             <button
@@ -48,9 +48,8 @@ export const TopBar: React.FC<TopBarProps> = ({
           </div>
         </div>
 
-        {/* Toolbar Actions */}
         <div className="flex items-center gap-2">
-          {/* Node Palette Spawners */}
+
           <div className="flex items-center gap-1.5 bg-zinc-950/60 p-1 rounded-xl border border-zinc-800/80">
             <Button
               variant="ghost"
@@ -80,7 +79,6 @@ export const TopBar: React.FC<TopBarProps> = ({
 
           <div className="w-px h-6 bg-zinc-800 mx-1" />
 
-          {/* Execution Controls */}
           <Button
             variant="secondary"
             onClick={resetExecutionStatus}

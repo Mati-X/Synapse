@@ -35,7 +35,6 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   const menuRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = React.useState(false);
 
-  // Close on outside click or Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -57,7 +56,6 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     };
   }, [onClose]);
 
-  // Viewport clamping
   const menuWidth = 220;
   const menuHeight = type === 'node' ? 180 : 190;
   const clampedX = Math.min(Math.max(12, x), window.innerWidth - menuWidth - 16);

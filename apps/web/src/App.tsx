@@ -50,7 +50,6 @@ export const App: React.FC = () => {
               updateNodeStatus(data.nodeId, 'FAILED', undefined, data.error);
             }
           } catch {
-            // Ignore parse errors on ping events
           }
         };
 
@@ -60,7 +59,6 @@ export const App: React.FC = () => {
         };
       }
     } catch {
-      // Local In-Browser Kahn DAG Engine with Branch Skipping
       const resolveVariable = (variables: Record<string, any>, path?: string): any => {
         if (!path) return undefined;
         const parts = path.split('.');
@@ -97,7 +95,6 @@ export const App: React.FC = () => {
       const nodeOutputs = new Map<string, { output: any; nextHandle?: string }>();
       const skippedNodes = new Set<string>();
 
-      // Kahn Topological Sort
       const inDegree = new Map<string, number>();
       const adj = new Map<string, string[]>();
       definition.nodes.forEach((n) => {
@@ -127,7 +124,6 @@ export const App: React.FC = () => {
         }
       }
 
-      // Add any unvisited nodes to fallback
       definition.nodes.forEach((n) => {
         if (!executionOrder.includes(n.id)) executionOrder.push(n.id);
       });
@@ -182,7 +178,6 @@ export const App: React.FC = () => {
           nodeOutputs.set(node.id, { output, nextHandle });
           updateNodeStatus(node.id, 'COMPLETED', output);
         } else {
-          // HTTP Request action node
           const output = { status: 200, statusText: 'OK', data: { success: true } };
           nodeOutputs.set(node.id, { output, nextHandle: 'output' });
           updateNodeStatus(node.id, 'COMPLETED', output);
