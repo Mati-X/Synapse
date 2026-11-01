@@ -21,7 +21,6 @@ export const runRoutes: FastifyPluginAsync = async (app: FastifyInstance) => {
       reply.raw.write(`data: ${JSON.stringify(event)}\n\n`);
     });
 
-    // Clean up subscription when the client disconnects
     request.raw.on('close', () => {
       unsubscribe();
     });

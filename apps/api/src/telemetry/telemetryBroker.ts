@@ -5,7 +5,6 @@ class TelemetryBroker {
   private emitter = new EventEmitter();
 
   constructor() {
-    // Increase listener limit for concurrent SSE subscribers
     this.emitter.setMaxListeners(100);
   }
 

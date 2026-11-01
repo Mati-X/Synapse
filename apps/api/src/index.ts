@@ -7,16 +7,24 @@ const host = process.env.HOST || '0.0.0.0';
 
 async function start() {
   try {
-    const worker = createWorkflowWorker();
-    console.log('⚡ BullMQ Workflow Worker initialized');
+    let worker: any = null;
+    if (process.env.ENABLE_BULLMQ === 'true') {
+      try {
+        worker = createWorkflowWorker();
+        console.log('⚡ BullMQ Workflow Worker initialized');
+      } catch (err: any) {
+        console.warn('⚠️ BullMQ worker disabled: Redis not available');
+      }
+    }
 
     await app.listen({ port, host });
     console.log(`🚀 Synapse API server listening on http://${host}:${port}`);
 
-    // Graceful shutdown
     const shutdown = async () => {
       console.log('🛑 Shutting down gracefully...');
-      await worker.close();
+      if (worker) {
+        await worker.close();
+      }
       await app.close();
       process.exit(0);
     };
