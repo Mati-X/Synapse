@@ -27,6 +27,8 @@ interface WorkflowStoreState {
   setConnectingHandle: (handle: { nodeId: string; handleId?: string | null; handleType?: string } | null) => void;
 
   addNode: (nodeType: 'TRIGGER' | 'CORE_CONDITION' | 'HTTP_REQUEST', position?: { x: number; y: number }) => void;
+  deleteNode: (nodeId: string) => void;
+  duplicateNode: (nodeId: string) => void;
   selectNode: (nodeId: string | null) => void;
   updateNodeConfig: (nodeId: string, config: Record<string, any>) => void;
   updateNodeStatus: (nodeId: string, status: NodeExecutionStatus, output?: any, error?: string) => void;
@@ -36,6 +38,8 @@ interface WorkflowStoreState {
 
   toWorkflowDefinition: () => WorkflowDefinition;
   loadWorkflowDefinition: (definition: WorkflowDefinition) => void;
+  loadWorkflow: (name: string, nodes: SynapseNode[], edges: SynapseEdge[], id?: string) => void;
+  createNewWorkflow: (name?: string) => void;
 }
 
 const initialNodes: SynapseNode[] = [
@@ -246,6 +250,42 @@ export const useWorkflowStore = create<WorkflowStoreState>((set, get) => ({
     });
   },
 
+  deleteNode: (nodeId: string) => {
+    set({
+      nodes: get().nodes.filter((node) => node.id !== nodeId),
+      edges: get().edges.filter((edge) => edge.source !== nodeId && edge.target !== nodeId),
+      selectedNodeId: get().selectedNodeId === nodeId ? null : get().selectedNodeId,
+    });
+  },
+
+  duplicateNode: (nodeId: string) => {
+    const node = get().nodes.find((n) => n.id === nodeId);
+    if (!node) return;
+
+    const newId = `${node.data.type.toLowerCase()}_${Date.now()}`;
+    const newNode: SynapseNode = {
+      ...node,
+      id: newId,
+      position: {
+        x: node.position.x + 36,
+        y: node.position.y + 36,
+      },
+      data: {
+        ...node.data,
+        title: `${node.data.title} (Copy)`,
+        status: 'IDLE',
+        output: undefined,
+        error: undefined,
+      },
+      selected: true,
+    };
+
+    set({
+      nodes: [...get().nodes.map((n) => ({ ...n, selected: false })), newNode],
+      selectedNodeId: newId,
+    });
+  },
+
   selectNode: (nodeId) => {
     set({ selectedNodeId: nodeId });
   },
@@ -376,6 +416,57 @@ export const useWorkflowStore = create<WorkflowStoreState>((set, get) => ({
       },
       selectedNodeId: null,
       validationError: null,
+    });
+  },
+
+  loadWorkflow: (name, nodes, edges, id) => {
+    set({
+      nodes: nodes.map((n) => ({
+        ...n,
+        data: {
+          ...n.data,
+          status: 'IDLE',
+          output: undefined,
+          error: undefined,
+        },
+      })),
+      edges,
+      workflowMeta: {
+        id: id || `wf_${Date.now()}`,
+        name,
+        version: 1,
+      },
+      selectedNodeId: null,
+      validationError: null,
+      isExecuting: false,
+    });
+  },
+
+  createNewWorkflow: (name) => {
+    const defaultTrigger: SynapseNode = {
+      id: 'trigger_1',
+      type: 'triggerNode',
+      position: { x: 100, y: 150 },
+      data: {
+        title: 'Incoming Webhook',
+        type: 'TRIGGER',
+        category: 'TRIGGER',
+        config: {},
+        status: 'IDLE',
+      },
+    };
+
+    set({
+      nodes: [defaultTrigger],
+      edges: [],
+      workflowMeta: {
+        id: `wf_${Date.now()}`,
+        name: name || 'Untitled Pipeline',
+        version: 1,
+      },
+      selectedNodeId: 'trigger_1',
+      validationError: null,
+      isExecuting: false,
     });
   },
 }));
