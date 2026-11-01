@@ -86,9 +86,7 @@ export const NodePort: React.FC<NodePortProps> = ({
   const activeVariant = !isOutput ? incomingVariant : resolvedVariant;
   const styles = variantStyles[activeVariant];
 
-  const displayLabel = !isOutput && incomingEdge
-    ? incomingEdge.sourceHandle?.toUpperCase() || 'IN'
-    : label || (id === 'true' ? 'TRUE' : id === 'false' ? 'FALSE' : isOutput ? 'OUT' : 'IN');
+  const displayLabel = label || (isOutput ? (id === 'true' ? 'TRUE' : id === 'false' ? 'FALSE' : 'OUT') : 'IN');
 
   return (
     <div
@@ -114,9 +112,9 @@ export const NodePort: React.FC<NodePortProps> = ({
           <span className="text-[8px] font-mono font-bold tracking-wider uppercase">
             {displayLabel}
           </span>
-          {isOutput && connectedEdgesCount > 0 && (
-            <span className="text-[7px] font-mono bg-zinc-800 text-zinc-300 rounded px-1">
-              {connectedEdgesCount}
+          {isOutput && connectedEdgesCount > 1 && (
+            <span className="text-[7px] font-mono bg-zinc-800 text-zinc-300 rounded px-0.5">
+              ×{connectedEdgesCount}
             </span>
           )}
         </div>

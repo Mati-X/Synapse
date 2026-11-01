@@ -95,15 +95,16 @@ export const ConditionNode: React.FC<NodeProps<SynapseNode>> = ({ id, data, sele
 
   return (
     <div className="relative">
-      <NodeCard selected={selected} status={data.status} className="w-[280px]">
+      <NodeCard selected={selected} status={data.status} className="w-[300px]">
         <NodeHeader
           title={data.title}
           subtitle="Logic Comparator"
           icon={<GitFork />}
+          status={data.status}
         />
 
         {/* Symmetrical Dual-Story Comparator Deck */}
-        <div className="flex flex-col gap-1.5 pt-0.5">
+        <div className="flex flex-col gap-1 pt-0.5 relative">
           {/* Story A: IN A ── [ Operand A ] ── TRUE */}
           <div className="flex items-center justify-between">
             <NodePort type="target" position={Position.Left} id="input_a" label="IN A" />
@@ -113,9 +114,9 @@ export const ConditionNode: React.FC<NodeProps<SynapseNode>> = ({ id, data, sele
               onClick={() => setActivePicker(activePicker === 'A' ? null : 'A')}
               title="Click to select upstream variable"
               className={`
-                flex-1 mx-1.5 bg-zinc-950/80 hover:bg-zinc-900 border rounded-md px-2 py-1
-                shadow-[inset_0_1.5px_2px_rgba(0,0,0,0.6)] flex items-center justify-center min-w-0 cursor-pointer transition-colors
-                ${activePicker === 'A' ? 'border-amber-400/80 ring-1 ring-amber-400/40' : 'border-zinc-800/90 hover:border-zinc-600'}
+                flex-1 mx-1.5 bg-zinc-950/90 hover:bg-zinc-900 border rounded-lg px-2.5 py-1.5
+                shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.7)] flex items-center justify-center min-w-0 cursor-pointer transition-all
+                ${activePicker === 'A' ? 'border-amber-400/90 ring-1 ring-amber-400/50' : 'border-zinc-800/90 hover:border-zinc-600'}
               `}
             >
               {renderOperand(field)}
@@ -124,16 +125,20 @@ export const ConditionNode: React.FC<NodeProps<SynapseNode>> = ({ id, data, sele
             <NodePort type="source" position={Position.Right} id="true" label="TRUE" />
           </div>
 
-          {/* Center Operator Keycap (Click to toggle operator) */}
-          <div className="relative flex items-center justify-center -my-1 z-10">
+          {/* Center Operator Keycap & Bridge */}
+          <div className="relative flex items-center justify-center py-0.5 z-10">
+            <div className="absolute inset-x-8 h-px bg-zinc-800/80 -z-1" />
             <button
               type="button"
               onClick={handleCycleOperator}
               title={`Operator: ${operator}. Click to cycle.`}
-              className="nodrag nopan bg-gradient-to-b from-zinc-800 to-zinc-900 hover:from-zinc-700 hover:to-zinc-800 active:scale-95 border border-zinc-600/80 hover:border-zinc-500 rounded px-2 py-0.5 shadow-[0_2px_4px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.15)] flex items-center justify-center cursor-pointer transition-all"
+              className="nodrag nopan bg-gradient-to-b from-zinc-800 to-zinc-900 hover:from-zinc-700 hover:to-zinc-800 active:scale-95 border border-zinc-600/90 hover:border-zinc-400 rounded-md px-2.5 py-0.5 shadow-[0_2px_6px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.18)] flex items-center gap-1.5 cursor-pointer transition-all"
             >
-              <span className="text-[10px] font-mono font-bold text-zinc-100 tracking-tight">
+              <span className="text-[11px] font-mono font-bold text-amber-300 tracking-tight">
                 {symbol}
+              </span>
+              <span className="text-[9px] font-mono text-zinc-400 uppercase tracking-wider">
+                {operator}
               </span>
             </button>
           </div>
@@ -147,9 +152,9 @@ export const ConditionNode: React.FC<NodeProps<SynapseNode>> = ({ id, data, sele
               onClick={() => setActivePicker(activePicker === 'B' ? null : 'B')}
               title="Click to select variable or target value"
               className={`
-                flex-1 mx-1.5 bg-zinc-950/80 hover:bg-zinc-900 border rounded-md px-2 py-1
-                shadow-[inset_0_1.5px_2px_rgba(0,0,0,0.6)] flex items-center justify-center min-w-0 cursor-pointer transition-colors
-                ${activePicker === 'B' ? 'border-amber-400/80 ring-1 ring-amber-400/40' : 'border-zinc-800/90 hover:border-zinc-600'}
+                flex-1 mx-1.5 bg-zinc-950/90 hover:bg-zinc-900 border rounded-lg px-2.5 py-1.5
+                shadow-[inset_0_1.5px_3px_rgba(0,0,0,0.7)] flex items-center justify-center min-w-0 cursor-pointer transition-all
+                ${activePicker === 'B' ? 'border-amber-400/90 ring-1 ring-amber-400/50' : 'border-zinc-800/90 hover:border-zinc-600'}
               `}
             >
               {renderOperand(targetValue)}

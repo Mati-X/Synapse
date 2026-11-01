@@ -12,10 +12,12 @@ export const FormField: React.FC<FormFieldProps> = ({
   helperText,
 }) => {
   return (
-    <div>
-      <label>{label}</label>
-      {children}
-      {helperText && <span>{helperText}</span>}
+    <div className="flex flex-col gap-1.5 py-1">
+      <div className="flex items-center justify-between">
+        <label className="text-xs font-mono font-medium text-zinc-300">{label}</label>
+      </div>
+      <div>{children}</div>
+      {helperText && <span className="text-[10px] font-mono text-zinc-500">{helperText}</span>}
     </div>
   );
 };

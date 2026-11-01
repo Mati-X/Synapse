@@ -41,6 +41,7 @@ export const HttpRequestNode: React.FC<NodeProps<SynapseNode>> = ({ id, data, se
         title={data.title}
         subtitle={domain || 'HTTP Webhook'}
         icon={<FaviconIcon url={url} />}
+        status={data.status}
       />
 
       {/* Recessed Request Well */}

@@ -19,6 +19,7 @@ export const TriggerNode: React.FC<NodeProps<SynapseNode>> = ({ id, data, select
         title={data.title}
         subtitle="Webhook Trigger"
         icon={<Zap className="text-amber-400" />}
+        status={data.status}
       />
 
       <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400 py-1 px-1">
