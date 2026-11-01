@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { StudioLayout } from './components/templates/StudioLayout';
-import { ComponentShowcase } from './pages/ComponentShowcase';
+import { ProjectsDashboard } from './pages/ProjectsDashboard';
 import { useWorkflowStore } from './store/workflowStore';
 
 export const App: React.FC = () => {
-  const [view, setView] = useState<'studio' | 'showcase'>('showcase');
+  const [view, setView] = useState<'dashboard' | 'studio'>('dashboard');
 
   const {
     toWorkflowDefinition,
@@ -195,28 +195,13 @@ export const App: React.FC = () => {
 
   return (
     <>
-      <div style={{ position: 'fixed', bottom: 16, right: 16, zIndex: 9999 }}>
-        <button
-          onClick={() => setView(view === 'studio' ? 'showcase' : 'studio')}
-          style={{
-            padding: '8px 16px',
-            backgroundColor: '#4f46e5',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '6px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-          }}
-        >
-          {view === 'studio' ? '👁️ Open Component Showcase' : '🎨 Open Canvas Studio'}
-        </button>
-      </div>
-
-      {view === 'showcase' ? (
-        <ComponentShowcase />
+      {view === 'dashboard' ? (
+        <ProjectsDashboard onOpenStudio={() => setView('studio')} />
       ) : (
-        <StudioLayout onRunWorkflow={handleRunWorkflow} />
+        <StudioLayout
+          onRunWorkflow={handleRunWorkflow}
+          onNavigateHome={() => setView('dashboard')}
+        />
       )}
     </>
   );
