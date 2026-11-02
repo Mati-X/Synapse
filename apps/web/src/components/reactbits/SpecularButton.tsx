@@ -57,11 +57,11 @@ export const SpecularButton: React.FC<SpecularButtonProps> = ({
       }}
       onMouseDown={() => setIsPressed(true)}
       onMouseUp={() => setIsPressed(false)}
-      className={`relative inline-flex items-center justify-center rounded-xl p-[1px] transition-all duration-200 select-none cursor-pointer group ${
+      className={`relative inline-flex items-center justify-center rounded-xl p-[1px] transition-all duration-200 select-none cursor-pointer group border border-zinc-800/80 ${
         isPressed ? 'scale-[0.97]' : 'hover:-translate-y-0.5'
       } ${className}`}
       style={{
-        background: 'rgba(63, 63, 70, 0.75)',
+        background: 'rgba(24, 24, 27, 0.9)',
         boxShadow: isHovered
           ? '0 6px 18px rgba(0, 0, 0, 0.75)'
           : '0 4px 12px rgba(0, 0, 0, 0.65)',

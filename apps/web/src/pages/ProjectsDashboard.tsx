@@ -585,7 +585,6 @@ export const ProjectsDashboard: React.FC<ProjectsDashboardProps> = () => {
                 ledColor="amber"
                 shortcut="NEW"
                 onClick={handleCreateNew}
-                className="px-3.5 py-2 text-[11px]"
               >
                 <Plus className="size-3.5 stroke-[2.5]" />
                 <span>New Pipeline</span>
@@ -688,7 +687,6 @@ export const ProjectsDashboard: React.FC<ProjectsDashboardProps> = () => {
                         setSelectedCategory('ALL');
                         setActiveNav('all');
                       }}
-                      className="px-3.5 py-2 text-[11px]"
                     >
                       <span>Reset Filters</span>
                     </SpecularButton>
@@ -697,7 +695,6 @@ export const ProjectsDashboard: React.FC<ProjectsDashboardProps> = () => {
                     variant="primary"
                     ledColor="amber"
                     onClick={handleCreateNew}
-                    className="px-3.5 py-2 text-[11px]"
                   >
                     <Plus className="size-3.5" />
                     <span>Create Pipeline</span>
