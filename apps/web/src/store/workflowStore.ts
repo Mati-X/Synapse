@@ -39,7 +39,8 @@ interface WorkflowStoreState {
   toWorkflowDefinition: () => WorkflowDefinition;
   loadWorkflowDefinition: (definition: WorkflowDefinition) => void;
   loadWorkflow: (name: string, nodes: SynapseNode[], edges: SynapseEdge[], id?: string) => void;
-  createNewWorkflow: (name?: string) => void;
+  createNewWorkflow: (name?: string, id?: string) => void;
+  setWorkflowName: (name: string) => void;
 }
 
 const initialNodes: SynapseNode[] = [
@@ -442,7 +443,7 @@ export const useWorkflowStore = create<WorkflowStoreState>((set, get) => ({
     });
   },
 
-  createNewWorkflow: (name) => {
+  createNewWorkflow: (name, id) => {
     const defaultTrigger: SynapseNode = {
       id: 'trigger_1',
       type: 'triggerNode',
@@ -460,13 +461,22 @@ export const useWorkflowStore = create<WorkflowStoreState>((set, get) => ({
       nodes: [defaultTrigger],
       edges: [],
       workflowMeta: {
-        id: `wf_${Date.now()}`,
-        name: name || 'Untitled Pipeline',
+        id: id || crypto.randomUUID(),
+        name: name || 'Unnamed Pipeline',
         version: 1,
       },
       selectedNodeId: 'trigger_1',
       validationError: null,
       isExecuting: false,
+    });
+  },
+
+  setWorkflowName: (name) => {
+    set({
+      workflowMeta: {
+        ...get().workflowMeta,
+        name: name.trim() || 'Unnamed Pipeline',
+      },
     });
   },
 }));

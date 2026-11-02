@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '../atoms/Button';
 import { useWorkflowStore } from '../../store/workflowStore';
-import { Play, RotateCcw, Zap, GitBranch, Globe, Loader2, LayoutGrid } from 'lucide-react';
+import { Play, RotateCcw, Zap, GitBranch, Globe, Loader2, LayoutGrid, Pencil } from 'lucide-react';
 
 export interface TopBarProps {
   onRunWorkflow?: () => void;
@@ -12,7 +12,38 @@ export const TopBar: React.FC<TopBarProps> = ({
   onRunWorkflow,
   onNavigateHome,
 }) => {
-  const { workflowMeta, addNode, isExecuting, resetExecutionStatus } = useWorkflowStore();
+  const {
+    workflowMeta,
+    addNode,
+    isExecuting,
+    resetExecutionStatus,
+    setWorkflowName,
+  } = useWorkflowStore();
+
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [tempName, setTempName] = useState(workflowMeta.name);
+
+  useEffect(() => {
+    setTempName(workflowMeta.name);
+  }, [workflowMeta.name]);
+
+  const handleSaveName = () => {
+    if (tempName.trim()) {
+      setWorkflowName(tempName.trim());
+    } else {
+      setTempName(workflowMeta.name);
+    }
+    setIsEditingName(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSaveName();
+    } else if (e.key === 'Escape') {
+      setTempName(workflowMeta.name);
+      setIsEditingName(false);
+    }
+  };
 
   return (
     <header className="bg-zinc-900/95 border-b border-zinc-800/90 text-zinc-200 select-none backdrop-blur-md z-40">
@@ -30,15 +61,32 @@ export const TopBar: React.FC<TopBarProps> = ({
             </button>
           )}
 
-          <div className="size-8 font-mono font-bold text-base rounded-lg flex items-center justify-center bg-gradient-to-br from-amber-400 to-amber-500 text-zinc-950 shadow-[0_0_14px_rgba(245,158,11,0.35),inset_0_1px_0_rgba(255,255,255,0.4)] border border-amber-300/40">
+          <div className="size-8 font-mono font-bold text-base rounded-lg flex items-center justify-center bg-gradient-to-br from-amber-400 to-amber-500 text-zinc-950 shadow-[0_0_14px_rgba(245,158,11,0.35),inset_0_1px_0_rgba(255,255,255,0.4)] border border-amber-300/40 shrink-0">
             {workflowMeta.name[0] || 'S'}
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2">
-              <h1 className="font-sans font-semibold text-sm text-zinc-100 tracking-tight">
-                {workflowMeta.name}
-              </h1>
-              <span className="text-[10px] font-mono text-zinc-400 bg-zinc-800/80 border border-zinc-700/60 px-1.5 py-0.2 rounded">
+              {isEditingName ? (
+                <input
+                  type="text"
+                  value={tempName}
+                  onChange={(e) => setTempName(e.target.value)}
+                  onBlur={handleSaveName}
+                  onKeyDown={handleKeyDown}
+                  autoFocus
+                  className="font-sans font-semibold text-sm text-zinc-100 bg-zinc-950 border border-amber-500/80 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-amber-500/40 tracking-tight"
+                />
+              ) : (
+                <button
+                  onClick={() => setIsEditingName(true)}
+                  className="group/title flex items-center gap-1.5 text-left font-sans font-semibold text-sm text-zinc-100 hover:text-white hover:bg-zinc-800/80 rounded px-1.5 py-0.5 -ml-1.5 transition-colors cursor-text tracking-tight truncate max-w-[320px]"
+                  title="Click to rename pipeline"
+                >
+                  <span className="truncate">{workflowMeta.name}</span>
+                  <Pencil className="size-3 text-zinc-500 opacity-0 group-hover/title:opacity-100 transition-opacity shrink-0" />
+                </button>
+              )}
+              <span className="text-[10px] font-mono text-zinc-400 bg-zinc-800/80 border border-zinc-700/60 px-1.5 py-0.2 rounded shrink-0">
                 v{workflowMeta.version}
               </span>
             </div>

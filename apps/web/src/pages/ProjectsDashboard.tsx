@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
-import { ProjectItem, mockProjects } from '../data/mockProjects';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ProjectItem } from '../types/workflow';
 import { useWorkflowStore } from '../store/workflowStore';
+import { useAuthStore } from '../store/authStore';
 import {
   Plus,
   Search,
@@ -21,22 +23,48 @@ import {
   Globe,
   FolderOpen,
   HelpCircle,
+  Database,
+  LogOut,
 } from 'lucide-react';
 
 export interface ProjectsDashboardProps {
-  onOpenStudio: () => void;
+  onOpenStudio?: () => void;
+  onLogout?: () => void;
 }
 
-export const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onOpenStudio }) => {
+export const ProjectsDashboard: React.FC<ProjectsDashboardProps> = () => {
+  const navigate = useNavigate();
   const { loadWorkflow, createNewWorkflow } = useWorkflowStore();
-  const [projects, setProjects] = useState<ProjectItem[]>(mockProjects);
+  const { user, logout } = useAuthStore();
+  const [projects, setProjects] = useState<ProjectItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [activeNav, setActiveNav] = useState<'all' | 'recents' | 'favorites' | 'templates'>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
-  const [isNewModalOpen, setIsNewModalOpen] = useState(false);
-  const [newPipelineName, setNewPipelineName] = useState('');
+  const [isDbConnected, setIsDbConnected] = useState(false);
+  const [isLoading, setIsLoading] = useState(() => projects.length === 0);
+
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+
+  useEffect(() => {
+    fetchWorkflows();
+  }, []);
+
+  const fetchWorkflows = async () => {
+    try {
+      const res = await fetch(`${apiUrl}/api/workflows`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.workflows && data.workflows.length > 0) {
+          setProjects(data.workflows);
+          setIsDbConnected(true);
+        }
+      }
+    } catch {} finally {
+      setIsLoading(false);
+    }
+  };
 
   const categories = ['ALL', 'FINANCE', 'DEVOPS', 'AI & LLM', 'ECOMMERCE'];
 
@@ -54,23 +82,80 @@ export const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onOpenStud
 
   const handleLaunchProject = (project: ProjectItem) => {
     loadWorkflow(project.name, project.nodes, project.edges, project.id);
-    onOpenStudio();
+    navigate(`/studio/${project.id}`);
   };
 
-  const handleCreateNew = () => {
-    if (!newPipelineName.trim()) return;
-    createNewWorkflow(newPipelineName.trim());
-    setIsNewModalOpen(false);
-    setNewPipelineName('');
-    onOpenStudio();
+  const handleCreateNew = async () => {
+    const newId = crypto.randomUUID();
+    const defaultNodes = [
+      {
+        id: 'trigger_1',
+        type: 'triggerNode',
+        position: { x: 100, y: 150 },
+        data: {
+          title: 'Incoming Webhook',
+          type: 'TRIGGER',
+          category: 'TRIGGER',
+          config: {},
+          status: 'IDLE',
+        },
+      },
+    ];
+
+    try {
+      const res = await fetch(`${apiUrl}/api/workflows`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: newId,
+          name: 'Unnamed Pipeline',
+          nodes: defaultNodes,
+          edges: [],
+        }),
+      });
+
+      if (res.ok) {
+        const created = await res.json();
+        createNewWorkflow(created.name, created.id);
+        navigate(`/studio/${created.id}`);
+        return;
+      }
+    } catch {}
+
+    createNewWorkflow('Unnamed Pipeline', newId);
+    navigate(`/studio/${newId}`);
   };
 
-  const handleDuplicate = (project: ProjectItem, e: React.MouseEvent) => {
+  const handleDuplicate = async (project: ProjectItem, e: React.MouseEvent) => {
     e.stopPropagation();
+    const newId = crypto.randomUUID();
+    const duplicateName = `${project.name} (Copy)`;
+
+    try {
+      const res = await fetch(`${apiUrl}/api/workflows`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: newId,
+          name: duplicateName,
+          description: project.description,
+          category: project.category,
+          nodes: project.nodes,
+          edges: project.edges,
+        }),
+      });
+
+      if (res.ok) {
+        fetchWorkflows();
+        setActiveMenuId(null);
+        return;
+      }
+    } catch {}
+
     const duplicated: ProjectItem = {
       ...project,
-      id: `proj_${Date.now()}`,
-      name: `${project.name} (Copy)`,
+      id: newId,
+      name: duplicateName,
       status: 'DRAFT',
       updatedAt: 'just now',
       executionsCount: 0,
@@ -79,8 +164,12 @@ export const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onOpenStud
     setActiveMenuId(null);
   };
 
-  const handleDelete = (id: string, e: React.MouseEvent) => {
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    try {
+      await fetch(`${apiUrl}/api/workflows/${id}`, { method: 'DELETE' });
+    } catch {}
+
     setProjects(projects.filter((p) => p.id !== id));
     setActiveMenuId(null);
   };
@@ -90,19 +179,29 @@ export const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onOpenStud
       <aside className="w-64 border-r border-zinc-800/80 bg-zinc-950 flex flex-col justify-between shrink-0 z-30">
         <div>
           <div className="p-4 border-b border-zinc-800/80 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="size-8 rounded-lg bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center font-mono font-bold text-zinc-950 shadow-[0_0_14px_rgba(245,158,11,0.35)] border border-amber-300/40">
-                S
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="size-8 rounded-lg bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center text-zinc-950 font-bold text-xs shrink-0">
+                {user ? user.name[0]?.toUpperCase() : 'S'}
               </div>
-              <div className="flex flex-col">
-                <span className="font-semibold text-xs text-zinc-100 tracking-tight">
-                  Synapse Workspace
+              <div className="flex flex-col min-w-0">
+                <span className="font-semibold text-xs text-zinc-100 tracking-tight truncate">
+                  {user ? user.name : 'Synapse Workspace'}
                 </span>
-                <span className="text-[10px] font-mono text-zinc-400">
-                  Production DAG Cluster
+                <span className="text-[10px] font-mono text-zinc-400 truncate">
+                  {user ? user.email : 'Production DAG Cluster'}
                 </span>
               </div>
             </div>
+            <button
+              onClick={() => {
+                logout();
+                navigate('/');
+              }}
+              className="p-1.5 rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-zinc-900 transition-colors cursor-pointer shrink-0"
+              title="Log Out"
+            >
+              <LogOut className="size-3.5" />
+            </button>
           </div>
 
           <div className="p-3 space-y-1">
@@ -180,10 +279,13 @@ export const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onOpenStud
         <div className="p-4 border-t border-zinc-800/80 space-y-2">
           <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400">
             <div className="flex items-center gap-1.5">
-              <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
-              <span className="text-zinc-300">Engine Online</span>
+              <span className={`size-2 rounded-full ${isDbConnected ? 'bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-amber-400'}`} />
+              <span className="text-zinc-300">{isDbConnected ? 'PostgreSQL Live' : 'Engine Standby'}</span>
             </div>
-            <span>28ms Kahn</span>
+            <span className="flex items-center gap-1">
+              <Database className="size-3 text-zinc-500" />
+              <span>UUIDv4</span>
+            </span>
           </div>
           <div className="flex items-center justify-between pt-1 text-zinc-400 text-xs">
             <button className="hover:text-white flex items-center gap-1 cursor-pointer">
@@ -199,98 +301,121 @@ export const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onOpenStud
       </aside>
 
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
-
-        <header className="h-14 border-b border-zinc-800/80 bg-zinc-950/70 backdrop-blur-xl px-6 flex items-center justify-between shrink-0 z-20">
-          <div className="flex items-center gap-3">
-            <h1 className="text-sm font-semibold text-zinc-100 tracking-tight">
-              {activeNav === 'all'
-                ? 'All Pipelines'
-                : activeNav === 'recents'
-                ? 'Recent Executions'
-                : activeNav === 'favorites'
-                ? 'Pinned Favorites'
-                : 'Workflow Templates'}
-            </h1>
-            <span className="text-xs font-mono text-zinc-400">
-              ({filteredProjects.length} items)
-            </span>
-          </div>
-
-          <div className="flex items-center gap-3">
-
-            <div className="relative w-80">
-              <Search className="size-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
-              <input
-                type="text"
-                placeholder="Search workflows, tags, endpoints..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 placeholder:text-zinc-500 focus:outline-none focus:border-amber-500/70 font-mono shadow-inner"
-              />
+        <header className="h-14 border-b border-zinc-800/80 bg-zinc-950/70 backdrop-blur-xl px-6 lg:px-8 flex items-center shrink-0 z-20">
+          <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <h1 className="text-sm font-semibold text-zinc-100 tracking-tight">
+                {activeNav === 'all'
+                  ? 'All Pipelines'
+                  : activeNav === 'recents'
+                  ? 'Recent Executions'
+                  : activeNav === 'favorites'
+                  ? 'Pinned Favorites'
+                  : 'Workflow Templates'}
+              </h1>
+              <span className="text-xs font-mono text-zinc-400">
+                ({filteredProjects.length} items)
+              </span>
             </div>
 
-            <div className="flex items-center bg-zinc-900 p-0.5 rounded-lg border border-zinc-800">
+            <div className="flex items-center gap-3">
+              <div className="relative w-72 lg:w-80">
+                <Search className="size-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+                <input
+                  type="text"
+                  placeholder="Search workflows, tags, endpoints..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 placeholder:text-zinc-500 focus:outline-none focus:border-amber-500/70 font-mono shadow-inner"
+                />
+              </div>
+
+              <div className="flex items-center bg-zinc-900 p-0.5 rounded-lg border border-zinc-800">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-1.5 rounded-md transition-colors cursor-pointer ${
+                    viewMode === 'grid' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-zinc-300'
+                  }`}
+                  title="Grid View"
+                >
+                  <LayoutGrid className="size-3.5" />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-1.5 rounded-md transition-colors cursor-pointer ${
+                    viewMode === 'list' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-zinc-300'
+                  }`}
+                  title="List View"
+                >
+                  <List className="size-3.5" />
+                </button>
+              </div>
+
               <button
-                onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-md transition-colors cursor-pointer ${
-                  viewMode === 'grid' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-zinc-300'
-                }`}
-                title="Grid View"
+                onClick={handleCreateNew}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-semibold text-xs shadow-[0_0_16px_rgba(245,158,11,0.35)] transition-all cursor-pointer active:scale-95"
               >
-                <LayoutGrid className="size-3.5" />
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`p-1.5 rounded-md transition-colors cursor-pointer ${
-                  viewMode === 'list' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-zinc-300'
-                }`}
-                title="List View"
-              >
-                <List className="size-3.5" />
+                <Plus className="size-3.5 stroke-[2.5]" />
+                <span>New Pipeline</span>
               </button>
             </div>
-
-            <button
-              onClick={() => setIsNewModalOpen(true)}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-semibold text-xs shadow-[0_0_16px_rgba(245,158,11,0.35)] transition-all cursor-pointer active:scale-95"
-            >
-              <Plus className="size-3.5 stroke-[2.5]" />
-              <span>New Pipeline</span>
-            </button>
           </div>
         </header>
 
-        <div className="px-6 py-3 border-b border-zinc-800/80 bg-zinc-950/40 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-1.5 overflow-x-auto">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1 rounded-lg text-xs font-mono font-medium transition-colors cursor-pointer ${
-                  selectedCategory === cat
-                    ? 'bg-zinc-200 text-zinc-950 font-bold shadow-sm'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 bg-zinc-900/60 border border-zinc-800/60'
-                }`}
-              >
-                {cat === 'ALL' ? 'All' : cat}
-              </button>
-            ))}
-          </div>
+        <div className="px-6 lg:px-8 py-3 border-b border-zinc-800/80 bg-zinc-950/40 shrink-0">
+          <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
+            <div className="flex items-center gap-1.5 overflow-x-auto">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-3 py-1 rounded-lg text-xs font-mono font-medium transition-colors cursor-pointer ${
+                    selectedCategory === cat
+                      ? 'bg-zinc-200 text-zinc-950 font-bold shadow-sm'
+                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 bg-zinc-900/60 border border-zinc-800/60'
+                  }`}
+                >
+                  {cat === 'ALL' ? 'All' : cat}
+                </button>
+              ))}
+            </div>
 
-          <div className="hidden lg:flex items-center gap-4 text-[11px] font-mono text-zinc-400">
-            <span className="flex items-center gap-1">
-              <Activity className="size-3 text-sky-400" />
-              <span>96.8K runs today</span>
-            </span>
-            <span className="flex items-center gap-1">
-              <ShieldCheck className="size-3 text-emerald-400" />
-              <span>100% DAG safe</span>
-            </span>
+            <div className="hidden lg:flex items-center gap-4 text-[11px] font-mono text-zinc-400">
+              <span className="flex items-center gap-1">
+                <Activity className="size-3 text-sky-400" />
+                <span>96.8K runs today</span>
+              </span>
+              <span className="flex items-center gap-1">
+                <ShieldCheck className="size-3 text-emerald-400" />
+                <span>100% DAG safe</span>
+              </span>
+            </div>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6">
-          {filteredProjects.length === 0 ? (
+        <div className="flex-1 overflow-y-auto p-6 lg:p-8">
+          <div className="max-w-7xl mx-auto w-full">
+            {isLoading ? (
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-6">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div
+                    key={i}
+                    className="rounded-xl border border-zinc-800/80 bg-zinc-900/40 p-4 space-y-4 animate-pulse"
+                  >
+                    <div className="h-40 rounded-lg bg-zinc-800/40 w-full" />
+                    <div className="space-y-2">
+                      <div className="h-4 bg-zinc-800/60 rounded w-3/4" />
+                      <div className="h-3 bg-zinc-800/40 rounded w-full" />
+                      <div className="h-3 bg-zinc-800/30 rounded w-2/3" />
+                    </div>
+                    <div className="pt-2 border-t border-zinc-800/60 flex justify-between">
+                      <div className="h-4 bg-zinc-800/40 rounded w-16" />
+                      <div className="h-4 bg-zinc-800/40 rounded w-20" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : filteredProjects.length === 0 ? (
             <div className="h-64 flex flex-col items-center justify-center text-center text-zinc-500 font-mono text-xs">
               <FolderOpen className="size-8 opacity-30 mb-2" />
               <span>No workflows found matching criteria.</span>
@@ -342,7 +467,7 @@ export const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onOpenStud
                       </div>
                     </div>
 
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-xs flex items-center justify-center gap-2">
+                    <div className="absolute inset-0 bg-black/50 opacity-0 z-10 group-hover:opacity-100 transition-opacity backdrop-blur-xs flex items-center justify-center gap-2">
                       <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-zinc-950 font-semibold text-xs shadow-lg transition-transform transform group-hover:scale-105">
                         <span>Open in Studio</span>
                         <ExternalLink className="size-3.5" />
@@ -467,41 +592,9 @@ export const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onOpenStud
               ))}
             </div>
           )}
-        </div>
-      </div>
-
-      {isNewModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="w-full max-w-md rounded-2xl bg-zinc-900 border border-zinc-700/80 p-6 shadow-2xl space-y-4">
-            <h3 className="text-base font-semibold text-zinc-100">Create New Pipeline</h3>
-            <p className="text-xs text-zinc-400 leading-relaxed">
-              Name your workflow graph. You can start connecting nodes right away on the canvas.
-            </p>
-            <input
-              type="text"
-              placeholder="e.g. Stripe Order Settlement Router"
-              value={newPipelineName}
-              onChange={(e) => setNewPipelineName(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-amber-500"
-              autoFocus
-            />
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                onClick={() => setIsNewModalOpen(false)}
-                className="px-3 py-1.5 rounded-lg text-xs text-zinc-400 hover:text-zinc-200 cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCreateNew}
-                className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-zinc-950 cursor-pointer"
-              >
-                Create Pipeline
-              </button>
-            </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

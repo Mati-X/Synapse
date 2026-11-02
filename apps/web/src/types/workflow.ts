@@ -21,3 +21,18 @@ export interface WorkflowMetadata {
   name: string;
   version: number;
 }
+
+export interface ProjectItem {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  status: string;
+  tags: string[];
+  updatedAt: string;
+  executionsCount: number;
+  successRate?: number;
+  avgLatency?: string;
+  nodes: SynapseNode[];
+  edges: SynapseEdge[];
+}
